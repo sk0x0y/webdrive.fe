@@ -1,8 +1,16 @@
+import { useState } from 'react';
 /** @jsx jsx */
 import { css, jsx } from '@emotion/core';
+import { MdCheckBoxOutlineBlank, MdCheckBox } from 'react-icons/md';
 import oc from 'open-color';
+import { useDispatch, useSelector } from 'react-redux';
+import * as objectControl from '../stores/objectControl';
 
 const ObjectListView = () => {
+  const dispatch = useDispatch();
+  const { objectList } = useSelector((state) => state.objectControl);
+  const [checkAll, setCheckAll] = useState(false);
+
   const objectTable = css`
     border-bottom: 1px solid ${oc.gray[2]};
     font-size: 12px;
@@ -23,6 +31,10 @@ const ObjectListView = () => {
 
     &:hover {
       background-color: ${oc.gray[0]};
+
+      svg {
+        color: ${oc.blue[5]};
+      }
     }
 
     &:last-child {
@@ -30,7 +42,17 @@ const ObjectListView = () => {
     }
   `;
   const checkBox = css`
+    position: relative;
     flex-basis: 50px;
+
+    svg {
+      position: absolute;
+      top: -3px;
+      left: 0;
+      font-size: 18px;
+      color: ${oc.gray[6]};
+      cursor: pointer;
+    }
   `;
   const objectName = css`
     flex-grow: 1;
@@ -45,32 +67,22 @@ const ObjectListView = () => {
     flex-basis: 250px;
   `;
 
-  const objectList = [
-    {
-      name: '움집고.jpg',
-      size: '300 KB',
-      owner: '관리자',
-      updated: '2020-07-21 오전 01:18',
-    },
-    {
-      name: '움막고.jpg',
-      size: '800 KB',
-      owner: '관리자',
-      updated: '2020-07-21 오전 02:32',
-    },
-    {
-      name: '텐트고.jpg',
-      size: '1.2 MB',
-      owner: '관리자',
-      updated: '2020-07-21 오전 02:32',
-    },
-  ];
-
   return (
     <div css={objectTable}>
       <div css={objectTableHead}>
-        <div css={checkBox}>
-          <input type="checkbox" />
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */}
+        <div
+          css={checkBox}
+          onClick={() => {
+            setCheckAll(!checkAll);
+            dispatch(objectControl.checkAll(checkAll), [dispatch]);
+          }}
+        >
+          {checkAll ? (
+            <MdCheckBox color={oc.blue[5]} />
+          ) : (
+            <MdCheckBoxOutlineBlank />
+          )}
         </div>
         <div css={objectName}>이름</div>
         <div css={objectSize}>크기</div>
@@ -84,11 +96,18 @@ const ObjectListView = () => {
           /* eslint-disable-next-line react/no-array-index-key */
           key={idx}
           onClick={() => {
-            console.log(idx);
+            dispatch(objectControl.switchCheck(idx), [dispatch]);
+          }}
+          onContextMenu={() => {
+            dispatch(objectControl.switchCheck(idx), [dispatch]);
           }}
         >
           <div css={checkBox}>
-            <input type="checkbox" />
+            {objectList[idx].checked ? (
+              <MdCheckBox color={oc.blue[5]} />
+            ) : (
+              <MdCheckBoxOutlineBlank />
+            )}
           </div>
           <div css={objectName}>{object.name}</div>
           <div css={objectSize}>{object.size}</div>
